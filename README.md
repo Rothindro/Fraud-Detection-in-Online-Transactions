@@ -1,4 +1,4 @@
-# Fraud-Detection-in-Online-Transactions
+# Predictive Analytics for Financial Fraud detection in Digital Transactions
 ---
 ## 🎯Overview:
 This project aims to develop a robust fraud detection model using a financial trasaction dataset that contains mobile money transactions based on a sample of real transactions extracted from one month of financial logs from a mobile money service. The objective is to accurately identify and flag fraudulent activities within a simulated financial environment, thereby mitigating potential financial losses and enhancing security. The challenge lies in distinguishing subtle patterns of fraudulent behavior from legitimate transactions, often complicated by the dynamic and adaptive nature of fraud schemes.
