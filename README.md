@@ -48,17 +48,17 @@ The project employs time series analysis techniques, including:
 - __Error Analysis__
 
 
-__#### Data Extraction:__ 
+#### **Data Extraction:** 
 The dataset was acquired by downloading it from Kaggle using the `opendatasets` library. Specifically, the command `od.download('https://www.kaggle.com/datasets/ealaxi/paysim1')` was used to fetch the data, which was then loaded into a pandas DataFrame using `pd.read_csv('./paysim1/PS_20174392719_1491204439457_log.csv')`.
 
-__#### Data Cleaning & Preprocessing:__
+#### **Data Cleaning & Preprocessing:**
 Initial data cleaning involved several steps to ensure data quality and prepare for time-series analysis:
 - *Checking for Missing Values and Duplicates*: A thorough check was performed using `file.isna().sum()` and `file.duplicated().sum()`. The results confirmed no missing values or duplicate rows were present in the dataset.
 - *Sorting by 'step' column*: The dataset was initially sorted by the `step` column using `file=file.sort_values(by='step', ascending=True)`. This was crucial as `step` represents a temporal order, and maintaining this order is essential for subsequent time-series feature engineering and splitting.
 - *Converting 'step' to 'datetime'*: The numerical `step` column, which represents an hour in the simulation, was converted into a proper `datetime` column. An imaginary start date of '2010-01-01 00:00:00' was chosen, and `pd.to_timedelta(file['step'], unit='h')` was added to this base date to create the `datetime` column. The dataset was then re-sorted by this new `datetime` column, and the index was reset.
 - *Dropping 'isFlaggedFraud' Column*: The `isFlaggedFraud` column was dropped because it was considered redundant for our modeling objective. This column specifically flags transactions that meet a very strict definition of fraud (transfer attempts of over 200,000 units to a single destination account). While related to fraud, our goal is to build a model that identifies a broader range of fraudulent transactions captured by the `isFraud` column, which includes all types of fraudulent activities. Relying solely on `isFlaggedFraud` would limit the model's ability to generalize to other fraud patterns.
 
-__#### Feature Engineering:__
+#### **Feature Engineering:**
 Several new features were engineered to enhance the model's ability to detect fraud:
 - *Time-based Features*: From the `datetime` column, `hour`, `day`, and `weekday` features were extracted. These capture cyclical patterns and temporal trends in fraudulent activities.
 - *Logarithmic Transformation of Amount*: `log_amount = np.log1p(df['amount'])` was created to handle the skewed distribution of transaction amounts, making the feature more suitable for modeling.
@@ -69,7 +69,7 @@ Several new features were engineered to enhance the model's ability to detect fr
 
 The dataset was split into training and testing sets based on a `cutoff_date` of '2010-01-22'. This time-based split, with `train = file[file['datetime'] < cutoff_date].copy()` and `test = file[file['datetime'] >= cutoff_date].copy()`, was crucial to prevent data leakage and ensure that the model is evaluated on future, unseen data, reflecting a real-world fraud detection scenario.
 
-__#### EDA:__
+#### **EDA:**
 Summary of EDA Insights:
 
 **1. Transaction Type Distributions and Fraud Rates:**
@@ -88,7 +88,7 @@ Summary of EDA Insights:
 -   The dataset exhibits a severe class imbalance. Legitimate transactions ('isFraud' = 0) comprise an overwhelming majority (99.91%), while fraudulent transactions ('isFraud' = 1) are extremely rare (only 0.09%). This imbalance is clearly visible in the `isFraud` value counts and the pie chart.
 -   *Implication:* This severe imbalance is a critical challenge for model training. A model trained without addressing this imbalance might achieve high overall accuracy by simply predicting the majority class, but it would perform poorly in detecting the minority (fraudulent) class. Therefore, appropriate handling techniques (such as `scale_pos_weight` used in XGBoost, or other oversampling/undersampling methods) are essential for building an effective fraud detection model.
 
-__#### Model Training & Evaluation:__
+#### **Model Training & Evaluation:**
 We chose XGBoost (Extreme Gradient Boosting) for this fraud detection task due to several key advantages:
 1.  **Handling Imbalanced Datasets**: Fraud detection datasets are inherently imbalanced, meaning there are far fewer fraudulent transactions than legitimate ones. XGBoost effectively addresses this challenge through the `scale_pos_weight` parameter, which assigns higher weight to the minority class (fraudulent transactions). This helps the model learn from and correctly classify rare fraud events without being overwhelmed by the majority class.
 2.  **Performance and Efficiency**: XGBoost is a highly efficient and powerful gradient boosting framework known for its speed and accuracy. It is well-suited for large datasets and complex relationships between features. The `tree_method='hist'` and `device='gpu'` parameters were utilized to leverage GPU acceleration, significantly speeding up the training process on a large dataset like this one.
@@ -115,7 +115,7 @@ During the TimeSeriesSplit cross-validation, the model demonstrated strong and c
 
 The high average ROC-AUC score of approximately 0.9987 indicates the model's excellent ability to discriminate between fraudulent and legitimate transactions, suggesting a very low rate of misclassification across various thresholds. The F1 score, precision, and recall also reflect a well-balanced performance in identifying positive (fraudulent) cases.
 
-__#### Pediction and Evaluation:__
+#### **Pediction and Evaluation:**
 After training, the model was evaluated on a completely unseen, held-out test set (`test` dataframe). The performance metrics on this final test set are:
 
 ```
@@ -125,7 +125,7 @@ XGBClassifier   0.99924  0.95479  0.998827  0.984787   0.990905  0.921214
 
 The model maintained its strong performance on the unseen test data. Notably, the ROC-AUC score of **0.9988** reaffirms its exceptional capability in distinguishing fraud. The F1 score of 0.9548, precision of 0.9909, and recall of 0.9212 indicate a robust model that can effectively identify fraudulent transactions with high confidence and minimal false positives, which is critical in fraud detection systems.
 
-__#### Error Analysis:__
+#### **Error Analysis:**
 The confusion matrix provides a clear breakdown of the model's predictions versus the actual labels on the test set. From the heatmap, we can identify the following:
 
 - **True Negatives (TN):** The model correctly predicted legitimate transactions as legitimate. These are transactions where `isFraud = 0` and the model predicted `0`.
